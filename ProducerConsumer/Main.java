@@ -54,16 +54,32 @@ public class Main{
 
     synchronized public void write(String message){
         out.println(message);
+        notify();
+        // notifyAll();
     }
 
     synchronized public String read() throws IOException{
+        /*
+        * wait() to ensure that we won't block on a read() and hold onto monitor/lock
+        * we rely on notify() from writer threads
+         */
+        try {
+            wait();
+        } catch(InterruptedException e){
+            System.out.println("Interrupted");
+        }
         return in.readLine();
     }
 
     public static void main(String[] args) throws IOException {
         Main testImpl = new Main();
         new Thread(new Write(testImpl)).start();
+        /*
+        Using multiply consumers works since only one of these threads will awaken as soon as a
+        producer calls notify(). However don't use notifyAll(), as its possible 2 consecutive reading threads
+        obtain the monitor lock, and block
+         */
         new Thread(new Read(testImpl, "1")).start();
-        new Thread(new Read(testImpl,"2")).start();
+        new Thread(new Read(testImpl, "2")).start();
     }
 }
