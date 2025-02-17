@@ -2,6 +2,7 @@ package ProducerConsumer;
 
 import java.io.*;
 
+/*
 class Write implements Runnable{
 
     Main tmp;
@@ -19,6 +20,8 @@ class Write implements Runnable{
         }
     }
 }
+*/
+/*
 class Read implements Runnable{
 
     Main tmp;
@@ -39,7 +42,7 @@ class Read implements Runnable{
         }
     }
 }
-
+ */
 public class Main{
 
     //utilize a stream to read and write too
@@ -58,6 +61,29 @@ public class Main{
         // notifyAll();
     }
 
+    class Reader implements Runnable {
+        String id;
+        Reader(String id){
+            this.id = id;
+        }
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    System.out.println(id + ": " + Main.this.read());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+
+            }
+        }
+    }
+
+    public void beginReader(String id){
+        new Thread(new Reader(id)).start();
+    }
+
     synchronized public String read() throws IOException{
         /*
         * wait() to ensure that we won't block on a read() and hold onto monitor/lock
@@ -73,13 +99,20 @@ public class Main{
 
     public static void main(String[] args) throws IOException {
         Main testImpl = new Main();
-        new Thread(new Write(testImpl)).start();
-        /*
-        Using multiply consumers works since only one of these threads will awaken as soon as a
-        producer calls notify(). However don't use notifyAll(), as its possible 2 consecutive reading threads
-        obtain the monitor lock, and block
-         */
-        new Thread(new Read(testImpl, "1")).start();
-        new Thread(new Read(testImpl, "2")).start();
+        //Consumer shortcut utilizing Adapter class
+        testImpl.beginReader("1");
+        testImpl.beginReader("2");
+        //Product implementation utilizing anonymous class
+        new Thread(new Runnable(){
+            public void run(){
+                int i = 0;
+                while(true){
+                    testImpl.write("Message: " + i++);
+                    try{
+                        Thread.sleep(1000);
+                    }catch(InterruptedException e){}
+                }
+            }
+        }).start();
     }
 }
