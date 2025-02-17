@@ -52,11 +52,11 @@ public class Main{
         out =  new PrintWriter(new PipedWriter(pipedReader));
     }
 
-    public void write(String message){
+    synchronized public void write(String message){
         out.println(message);
     }
 
-    public String read() throws IOException{
+    synchronized public String read() throws IOException{
         return in.readLine();
     }
 
