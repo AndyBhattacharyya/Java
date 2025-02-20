@@ -11,10 +11,9 @@ public class Main {
         Socket client = fs.accept();
         InputStream cin = client.getInputStream();
         FileOutputStream fout = new FileOutputStream("dtest.png");
-        int data;
         System.out.println("This much data to copy: " + cin.available());
-        while((data = cin.read()) != -1) {
-            fout.write(data);
+        while(cin.available() > 0) {
+            fout.write(cin.read());
             //not sure if this is necessarry
             fout.flush();
         }
