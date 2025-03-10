@@ -1,5 +1,9 @@
 package EventDrivenPrototype;
 
+import EventDrivenPrototype.Events.Consumer;
+
+import java.util.ArrayList;
+
 /*
 set up
 public class EventDispatcher {
