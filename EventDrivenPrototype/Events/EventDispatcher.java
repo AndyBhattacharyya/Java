@@ -35,11 +35,12 @@ public class EventDispatcher {
         Gaurenteed a list of consumers for that particular event, however because of our initial
         declaration combined with our adhoc "enforcement" , we can't assume the type of DS retrieved from the array
          */
-        List<Consumer<E>> eventHandlers = handlers.get(event.getClass());
+        List<Consumer<? extends Event>> eventHandlers = handlers.get(event.getClass());
         if (eventHandlers != null) {
             //eventHandlers.forEach(accept(event));
             for (Consumer<? extends Event> handler : eventHandlers) {
-                handler.accept(event);
+                //Although at runtime we know what this type is, we will have to cast to compile
+                ((Consumer<E>)handler).accept(event);
             }
         }
     }
