@@ -2,14 +2,12 @@ package EventDrivenPrototype.Events;
 
 import EventDrivenPrototype.Lobby;
 
-public class UserCreateLobbyEvent extends Event{
-
+public class UserLeaveLobbyEvent extends Event{
     private User user;
-    public UserCreateLobbyEvent(User user) {
+    public UserLeaveLobbyEvent(User user) {
         //perform action associated with event
         this.user = user;
-        user.lobby = new Lobby(user);
-        //Dispatch our own event
+        user.lobby = null;
         EventDispatcher.dispatch(this);
     }
     //useful aux methods for events

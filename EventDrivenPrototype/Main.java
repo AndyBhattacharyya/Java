@@ -1,49 +1,26 @@
 package EventDrivenPrototype;
 
-import EventDrivenPrototype.Events.Consumer;
+import EventDrivenPrototype.Events.*;
 
 import java.util.ArrayList;
 
-/*
-set up
-public class EventDispatcher {
-
-
-  private Map<Class<? extends Event>, List<Consumer<Event>>> handlers = new HashMap<>();
-
-  ? interesting type inferencing going on regarding the generic type of ArrayList<>
-  public <E extends Event> void registerHandler(Class<E> eventType, Consumer<E> handler) {
-    handlers.computeIfAbsent(eventType, k -> new ArrayList<>()).add(handler::accept);
-  }
-
-  public void dispatch(Event event) {
-    List<Consumer<Event>> eventHandlers = handlers.get(event.getClass());
-    if (eventHandlers != null) {
-      eventHandlers.forEach(handler -> handler.accept(event));
-    }
-  }
-}
-
-// Create an EventDispatcher
-EventDispatcher dispatcher = new EventDispatcher();
-
-// Register handlers for UserCreatedEvent and UserUpdatedEvent
-dispatcher.registerHandler(UserCreatedEvent.class, new UserCreatedEventHandler()::onUserCreated);
-dispatcher.registerHandler(UserUpdatedEvent.class, new UserUpdatedEventHandler()::onUserUpdated);
-
-// Create a User
-User user = new User("iluwatar");
-
-// Dispatch UserCreatedEvent
-dispatcher.dispatch(new UserCreatedEvent(user));
-
-// Dispatch UserUpdatedEvent
-dispatcher.dispatch(new UserUpdatedEvent(user));
-
- */
 public class Main {
 
     public static void main(String args[]){
+        User u1 = new User("Andy");
+        new UserCreateLobbyEvent(u1);
+        User u2 = new User("George");
+        User u3 = new User("Partrick");
+        User u4 = new User("Jordan");
+        new UserJoinLobbyEvent(u2, u1);
+        new UserJoinLobbyEvent(u3, u1);
+        new UserJoinLobbyEvent(u4, u1);
+        new UserReadyUpEvent(u1);
+        new UserReadyUpEvent(u2);
+        new UserReadyUpEvent(u3);
+        new UserReadyUpEvent(u4);
+        new UserLeaveLobbyEvent(u1);
+        new UserJoinLobbyEvent(u1, u3);
 
     }
 }

@@ -2,14 +2,12 @@ package EventDrivenPrototype.Events;
 
 import EventDrivenPrototype.Lobby;
 
-public class UserCreateLobbyEvent extends Event{
-
+public class UserReadyUpEvent extends Event {
     private User user;
-    public UserCreateLobbyEvent(User user) {
+    public UserReadyUpEvent(User user) {
         //perform action associated with event
         this.user = user;
-        user.lobby = new Lobby(user);
-        //Dispatch our own event
+        user.isReady = true;
         EventDispatcher.dispatch(this);
     }
     //useful aux methods for events

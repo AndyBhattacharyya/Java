@@ -40,6 +40,7 @@ public class EventDispatcher {
             //eventHandlers.forEach(accept(event));
             for (Consumer<? extends Event> handler : eventHandlers) {
                 //Although at runtime we know what this type is, we will have to cast to compile
+                //Interesting: ((Consumer)handler).accept(event) also works
                 ((Consumer<E>)handler).accept(event);
             }
         }

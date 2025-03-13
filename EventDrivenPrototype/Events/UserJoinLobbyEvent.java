@@ -4,10 +4,11 @@ import EventDrivenPrototype.Lobby;
 
 public class UserJoinLobbyEvent extends Event {
     private User user;
-    public UserJoinLobbyEvent(User user, Lobby lobby) {
+    public UserJoinLobbyEvent(User user, User userLobby) {
         //perform action associated with event
         this.user = user;
-        user.lobby = lobby;
+        user.lobby = userLobby.lobby;
+        EventDispatcher.dispatch(this);
     }
     //useful aux methods for events
     public Lobby getUserLobby(){
