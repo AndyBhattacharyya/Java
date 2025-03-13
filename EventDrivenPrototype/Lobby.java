@@ -6,12 +6,27 @@ import java.io.PipedReader;
 import java.util.HashSet;
 import java.util.Set;
 
+
+enum GAMESTATE {
+    READYUP, UPLOAD, SELECT, DISPLAY
+    /*
+    Encapsulate Game state transition as enums, directly modifying the Lobby object passed to it
+    with methods
+    Ex: A user leaving during the readyup will require less action then a user leaving during upload
+     */
+
+
+}
+
 public class Lobby {
 
     private User host;
     private Set<User> users;
     private int usersReady;
     private int maxUsers;
+
+
+    private GAMESTATE gameState;
 
     public Lobby(User host){
         /*
@@ -22,6 +37,7 @@ public class Lobby {
         users.add(host);
         maxUsers =  4;
         usersReady = 0;
+        gameState = GAMESTATE.READYUP;
         //review anonymous inner class scoping: Lobby.this construct
         EventDispatcher.registerHandler(UserCreateLobbyEvent.class, this::UserCreateLobbyEventHandler);
         EventDispatcher.registerHandler(UserJoinLobbyEvent.class, this::UserJoinLobbyEventHandler);
@@ -47,14 +63,15 @@ public class Lobby {
             }
             usersReady--;
             System.out.println("User " + uEvent.getUser() + " left the lobby " + this);
-
         }
     }
+
     public void UserReadyUpEventHandler(UserReadyUpEvent uEvent){
         if(this==uEvent.getUserLobby()){
             System.out.println("User " + uEvent.getUser() + " is ready in lobby " + this);
             usersReady++;
             if(usersReady == maxUsers){
+                gameState = GAMESTATE.UPLOAD;
                 System.out.println("Lobby " + this + " has begun");
             }
         }
