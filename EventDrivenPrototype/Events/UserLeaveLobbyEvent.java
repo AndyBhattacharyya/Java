@@ -7,6 +7,7 @@ public class UserLeaveLobbyEvent extends Event{
     public UserLeaveLobbyEvent(User user) {
         //perform action associated with event
         this.user = user;
+        user.isReady = false;
         user.lobby = null;
         EventDispatcher.dispatch(this);
     }

@@ -23,29 +23,56 @@ public class Lobby {
     private User host;
     private Set<User> users;
     private int usersReady;
+    private int usersUploaded;
     private int maxUsers;
+    private int usersSelected;
 
 
     private GAMESTATE gameState;
 
     public Lobby(User host){
-        /*
-        Thread Initialization
-         */
         this.host = host;
         users = new HashSet<>();
         users.add(host);
         maxUsers =  4;
         usersReady = 0;
+        usersUploaded = 0;
+        usersSelected = 0;
         gameState = GAMESTATE.READYUP;
         //review anonymous inner class scoping: Lobby.this construct
         EventDispatcher.registerHandler(UserCreateLobbyEvent.class, this::UserCreateLobbyEventHandler);
         EventDispatcher.registerHandler(UserJoinLobbyEvent.class, this::UserJoinLobbyEventHandler);
         EventDispatcher.registerHandler(UserReadyUpEvent.class, this::UserReadyUpEventHandler);
         EventDispatcher.registerHandler(UserLeaveLobbyEvent.class, this::UserLeaveLobbyEventHandler);
-         }
+        EventDispatcher.registerHandler(UserUploadedFileEvent.class, this::UserUploadedFileEventHandler);
+        EventDispatcher.registerHandler(UserSelectedEvent.class, this::UserSelectedEventHandler);
+    }
+
 
     //set up event handler instance method references
+    public void UserSelectedEventHandler(UserSelectedEvent uEvent){
+        if(uEvent.getUserLobby() == this){
+            System.out.println(uEvent.getUser() + "has made their selection");
+            usersSelected++;
+            if(usersSelected == maxUsers){
+                gameState = GAMESTATE.DISPLAY;
+            }
+        }
+
+    }
+
+
+    public void UserUploadedFileEventHandler(UserUploadedFileEvent uEvent){
+        if(uEvent.getUserLobby() == this && gameState != GAMESTATE.SELECT) {
+            usersUploaded++;
+            System.out.println("User  " + uEvent.getUser() + "has uploaded a file");
+            if (usersUploaded == maxUsers) {
+                gameState = GAMESTATE.SELECT;
+            }
+        }
+    }
+
+
     public void UserLeaveLobbyEventHandler(UserLeaveLobbyEvent uEvent){
         if(users.contains(uEvent.getUser())){
             users.remove(uEvent.getUser());
@@ -62,7 +89,11 @@ public class Lobby {
                 System.out.println("User " + host + " is now the lobby host of " + this);
             }
             usersReady--;
+            usersSelected--;
             System.out.println("User " + uEvent.getUser() + " left the lobby " + this);
+
+            if (gameState != GAMESTATE.READYUP)
+                gameState = GAMESTATE.READYUP;
         }
     }
 
@@ -70,10 +101,14 @@ public class Lobby {
         if(this==uEvent.getUserLobby()){
             System.out.println("User " + uEvent.getUser() + " is ready in lobby " + this);
             usersReady++;
-            if(usersReady == maxUsers){
+            if(usersReady == maxUsers && usersUploaded ==maxUsers){
+                gameState = GAMESTATE.SELECT;
+            }
+            else if (usersReady == maxUsers) {
                 gameState = GAMESTATE.UPLOAD;
                 System.out.println("Lobby " + this + " has begun");
             }
+
         }
     }
     public void UserCreateLobbyEventHandler(UserCreateLobbyEvent uEvent){
@@ -87,6 +122,9 @@ public class Lobby {
         if(this==uEvent.getUserLobby()){
             if(users.size() < 4 && users.add(uEvent.getUser())) {
                 System.out.println("User " + uEvent.getUser() + " has joined this lobby: " + this.host);
+                if(uEvent.getUser().hasUploadedFile()){
+                    usersUploaded++;
+                }
             }
         }
     }
