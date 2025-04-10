@@ -26,12 +26,14 @@ public class Lobby {
     private int usersUploaded;
     private int maxUsers;
     private int usersSelected;
+    private String lobbyName;
 
 
     private GAMESTATE gameState;
 
-    public Lobby(User host){
+    public Lobby(User host, String lobbyName){
         this.host = host;
+        this.lobbyName = lobbyName;
         users = new HashSet<>();
         users.add(host);
         maxUsers =  4;
@@ -56,6 +58,7 @@ public class Lobby {
             usersSelected++;
             if(usersSelected == maxUsers){
                 gameState = GAMESTATE.DISPLAY;
+                System.out.println(GAMESTATE.DISPLAY);
             }
         }
 
@@ -68,6 +71,7 @@ public class Lobby {
             System.out.println("User  " + uEvent.getUser() + "has uploaded a file");
             if (usersUploaded == maxUsers) {
                 gameState = GAMESTATE.SELECT;
+                System.out.println(GAMESTATE.SELECT);
             }
         }
     }
@@ -92,8 +96,11 @@ public class Lobby {
             usersSelected--;
             System.out.println("User " + uEvent.getUser() + " left the lobby " + this);
 
-            if (gameState != GAMESTATE.READYUP)
+            if (gameState != GAMESTATE.READYUP) {
                 gameState = GAMESTATE.READYUP;
+                System.out.println(GAMESTATE.READYUP);
+            }
+
         }
     }
 
@@ -103,9 +110,11 @@ public class Lobby {
             usersReady++;
             if(usersReady == maxUsers && usersUploaded ==maxUsers){
                 gameState = GAMESTATE.SELECT;
+                System.out.println(GAMESTATE.SELECT);
             }
             else if (usersReady == maxUsers) {
                 gameState = GAMESTATE.UPLOAD;
+                System.out.println(GAMESTATE.UPLOAD);
                 System.out.println("Lobby " + this + " has begun");
             }
 

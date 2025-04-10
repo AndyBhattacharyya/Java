@@ -8,7 +8,7 @@ public class UserCreateLobbyEvent extends Event{
     public UserCreateLobbyEvent(User user) {
         //perform action associated with event
         this.user = user;
-        user.lobby = new Lobby(user);
+        user.lobby = new Lobby(user, user.toString());
         //Dispatch our own event
         EventDispatcher.dispatch(this);
     }
