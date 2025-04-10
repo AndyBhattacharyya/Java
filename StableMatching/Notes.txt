@@ -1,0 +1,6 @@
+In this approach, we model the users to live inside their lobbies. The lobby essentially abstracts from the specifics of
+the user, and hones in on the events that the user produces. The events drive the lobby through the phases of the game.
+However, one necessary function of this lobby is to "match" it's users which is an operation to be performed on it's
+users. However, providing the data structure of a lobby's users breaks the "lives in" relation between a lobby and it's
+users. Intuitively, it becomes more of a "contains" relation between a lobby and it's users. This is why I believe
+this model is unsuitable for our lobby/game implementation.
