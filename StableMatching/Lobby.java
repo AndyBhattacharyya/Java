@@ -1,10 +1,8 @@
 package StableMatching;
 
 import java.io.File;
-
-enum EVENT{
-    LOBBYCREATED, USERJOINED, USERLEFT, USERREADY, USERUNREADY, USERSELECTED,
-}
+import java.util.ArrayList;
+import java.util.List;
 
 enum GAMESTATE{
     WAITING, READYUP, SELECT, MATCH, DISPLAY
@@ -14,148 +12,119 @@ public class Lobby {
 
     private int maxPlayers;
     private int currentPlayers;
-    private int userReady;
-    private int userSelected;
+    private int usersReady;
+    private int usersSelected;
     private GAMESTATE gameState;
+
+    private List<User> usersMale;
+    private List<User> usersFemale;
+    private void computeUserMatchings(){
+        System.out.println("Matches being computed");
+    }
+
 
     public Lobby(int maxPlayers){
         this.maxPlayers = maxPlayers;
         currentPlayers = 0;
-        userReady = 0;
-        userSelected = 0;
+        usersReady = 0;
+        usersSelected = 0;
         gameState = GAMESTATE.WAITING;
-        outLobbyState();
+        usersMale = new ArrayList<>();
+        usersFemale = new ArrayList<>();
     }
 
-    public void outLobbyState(){
-        String message = "Lobby is now in State: " + this.gameState + "\n";
-        System.out.println(message);
+    public void displayLobby(){
+        System.out.println("Lobby is now in state: " + gameState);
     }
 
-    public void lobbyCreatedEventHandler(){
-        currentPlayers++;
-        outLobbyState();
-    }
-
-    public void userJoinedOrLeftEventHandler(boolean hasJoined){
-        if(hasJoined && currentPlayers < maxPlayers){
-            currentPlayers++;
-            if(currentPlayers == maxPlayers)
-                gameState = GAMESTATE.READYUP;
-        }
-        else{
-            if(currentPlayers > 0) {
-                currentPlayers--;
-                gameState = GAMESTATE.WAITING;
+    //also functions as user joins/creates lobby event
+    public void addUserToLobby(User user){
+        if(currentPlayers<maxPlayers) {
+            if (user.isUserInLobby()) {
+                user.disconnectUserFromLobby();
             }
-            if(currentPlayers == 0)
-                System.out.println("All users have left the lobby");
+            user.setUserInLobby(true);
+            if (user.userIsMale())
+                usersMale.add(user);
+            else
+                usersFemale.add(user);
+
+            //User created lobby
+            currentPlayers++;
+            if (currentPlayers == maxPlayers) {
+                gameState = GAMESTATE.READYUP;
+            }
+            user.registerUserReadyEventHandler(this::userReadyEvent);
+            user.registerUserSelectedEventHandler(this::userSelectedEvent);
+            user.registerUserLeaveLobbyEventHandler(this::userLeaveEvent);
         }
-        outLobbyState();
+        else
+            System.out.println("Lobby is full");
+        displayLobby();
     }
-    public void userReadyOrUnreadyEventHandler(boolean isReady){
-        if(isReady && userReady < maxPlayers){
-            userReady++;
-            if(userReady == maxPlayers)
+
+    public void userLeaveEvent(User user){
+        if(currentPlayers>0){
+            currentPlayers--;
+            if(user.userIsMale())
+                usersMale.remove(user);
+            else
+                usersFemale.remove(user);
+
+            //Make them redo readyup/selections
+            for(User member : usersMale){
+                member.resetUser();
+            }
+
+            for(User member : usersFemale){
+                member.resetUser();
+            }
+            usersReady = 0;
+            usersSelected = 0;
+            //current players will be less than max but need to reset user selections
+            gameState = GAMESTATE.WAITING;
+        }
+        displayLobby();
+    }
+
+    public void userReadyEvent(User user){
+        boolean isReady = user.isUserReady();
+        if(isReady && usersReady < maxPlayers){
+            usersReady++;
+            if(usersReady == maxPlayers){
                 gameState = GAMESTATE.SELECT;
+            }
         }
         else{
-            if(userReady > 0) {
-                userReady--;
-                if(gameState == GAMESTATE.SELECT && userSelected > 0){
-                    userSelected--;
+            if(usersReady > 0){
+                usersReady--;
+                if(gameState == GAMESTATE.SELECT){
+                    usersSelected--;
+                    user.unsetUserSelection();
+                    gameState = GAMESTATE.READYUP;
+                }
+                else if(gameState == GAMESTATE.MATCH){
+                    usersSelected--;
+                    user.unsetUserSelection();
                     gameState = GAMESTATE.READYUP;
                 }
             }
-            if(userReady == 0)
-                System.out.println("All users have unready in the lobby");
         }
-        outLobbyState();
+        displayLobby();
     }
 
-    public void userSelectedEventHandler(){
-        if(userSelected < maxPlayers){
-            userSelected++;
-            if(userSelected == maxPlayers)
-                gameState = GAMESTATE.MATCH;
+    public void userSelectedEvent(User user){
+        //don't care if user resubmits selection, won't affect anything
+        if(!user.hasUserSelected()) {
+            usersSelected++;
+            user.setUserSelected(true);
         }
-        outLobbyState();
+        if(usersSelected == maxPlayers){
+            gameState = GAMESTATE.MATCH;
+            computeUserMatchings();
+        }
+        displayLobby();
     }
-
-    public void dispatchLobbyEvents(EVENT event){
-        switch(event){
-            case LOBBYCREATED:
-                lobbyCreatedEventHandler();
-                break;
-            case USERJOINED:
-                userJoinedOrLeftEventHandler(true);
-                break;
-            case USERLEFT:
-                userJoinedOrLeftEventHandler(false);
-                break;
-            case USERREADY:
-                userReadyOrUnreadyEventHandler(true);
-                break;
-            case USERUNREADY:
-                userReadyOrUnreadyEventHandler(false);
-                break;
-            case USERSELECTED:
-                userSelectedEventHandler();
-                break;
-            default:
-                System.out.println("Unknown event, error");
-        }
-    }
-
-    public Lobby.User addUserToLobby(String name, File userImage, boolean isHost){
-        return new Lobby.User(name, userImage, isHost);
-    }
-    public Lobby.User addUserToLobby(String name, boolean isHost){
-        return new Lobby.User(name, isHost);
-    }
-
-    class User{
-        private String name;
-        private File userImage;
-        private boolean isHost;
-        private boolean isReady;
-
-        public User(String name, File userImage, boolean isHost){
-            this.name = name;
-            this.userImage = userImage;
-            this.isHost = isHost;
-            if(isHost)
-                dispatchLobbyEvents(EVENT.LOBBYCREATED);
-            else
-                dispatchLobbyEvents(EVENT.USERJOINED);
-        }
-
-        public User(String name, boolean isHost){
-            this.name = name;
-            this.userImage = null;
-            if(isHost)
-                dispatchLobbyEvents(EVENT.LOBBYCREATED);
-            else
-                dispatchLobbyEvents(EVENT.USERJOINED);
-        }
-
-        public void userSetReady(boolean isReady){
-            this.isReady = isReady;
-            if(this.isReady)
-                dispatchLobbyEvents(EVENT.USERREADY);
-            else
-                dispatchLobbyEvents(EVENT.USERUNREADY);
-        }
-
-        public void userSetSelection(){
-            dispatchLobbyEvents(EVENT.USERSELECTED);
-        }
-
-    }
-
-
-
-
 
 
 
