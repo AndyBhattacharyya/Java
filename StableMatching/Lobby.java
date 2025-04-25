@@ -1,5 +1,7 @@
 package StableMatching;
 
+import org.json.simple.JSONObject;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +11,16 @@ enum GAMESTATE{
 }
 
 public class Lobby {
+
+    private final String LOBBYNAMEKEY = "lobbyName";
+    private final String HOSTKEY = "host";
+    private final String MAXPLAYERKEY= "maxPlayers";
+    private final String GAMESTATEKEY = "gameState";
+    private final String USERSSELECTEDKEY = "usersSelected";
+    private final String USERSREADYKEY = "usersReady";
+    private final String CURRENTPLAYERSKEY = "currentPlayers";
+    private final String MALEKEY = "MALES";
+    private final String FEMALEKEY = "FEMALES";
 
     private int maxPlayers;
     private int currentPlayers;
@@ -34,7 +46,7 @@ public class Lobby {
     }
 
     public void displayLobby(){
-        System.out.println("Lobby is now in state: " + gameState);
+        System.out.println(this);
     }
 
     //also functions as user joins/creates lobby event
@@ -126,8 +138,25 @@ public class Lobby {
         displayLobby();
     }
 
+    public String toString(){
+        JSONObject json_lobby = new JSONObject();
+        json_lobby.put(MAXPLAYERKEY, maxPlayers);
+        json_lobby.put(CURRENTPLAYERSKEY, currentPlayers);
+        json_lobby.put(GAMESTATEKEY, gameState);
+        json_lobby.put(USERSSELECTEDKEY, usersSelected);
+        json_lobby.put(USERSREADYKEY,usersReady);
+        ArrayList<JSONObject> json_males = new ArrayList<>();
+        ArrayList<JSONObject> json_females = new ArrayList<>();
+        for(User user : usersMale){
+            json_males.add(user.jsonUser());
+        }
+        for(User user : usersFemale){
+            json_females.add(user.jsonUser());
+        }
 
-
-
+        json_lobby.put(MALEKEY,json_males);
+        json_lobby.put(FEMALEKEY,json_females);
+        return json_lobby.toJSONString();
+    }
 
 }

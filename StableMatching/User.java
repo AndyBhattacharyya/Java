@@ -1,16 +1,28 @@
 package StableMatching;
 
+import org.json.simple.JSONObject;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class User {
 
+    private final String USERNAMEKEY = "username";
+    private final String HOSTKEY = "isHost";
+    private final String ISMALEKEY = "isMale";
+    private final String ISREADYKEY = "isReady";
+    private final String HASSELECTEDKEY = "hasSelected";
+    private final String USERIMAGEKEY = "userimage";
+
     private String name;
     private File userImage;
     private boolean isHost;
     public boolean isUserHost(){
         return this.isHost;
+    }
+    public void setUserHost(boolean isHost){
+        this.isHost = isHost;
     }
     private boolean isMale;
     public boolean userIsMale(){
@@ -49,9 +61,11 @@ public class User {
     public boolean isUserReady(){
         return this.isReady;
     }
-    public void setUserReady(boolean isReady){
+    public void setUserReady(boolean isReady, boolean notify){
         this.isReady = isReady;
-        readyEventHandler.dispatch(this);
+        if(notify)
+            readyEventHandler.dispatch(this);
+
     }
     private UserReadyEventHandler readyEventHandler;
     public void registerUserReadyEventHandler(UserReadyEventHandler readyEventHandler){
@@ -87,7 +101,8 @@ public class User {
     }
     public void resetUser(){
         unsetUserSelection();
-        setUserReady(false);
+        setUserReady(false, false);
+        setUserSelected(false);
     }
     public void disconnectUserFromLobby(){
         resetUser();
@@ -95,5 +110,16 @@ public class User {
         unregisterUserSelectedEventHandler();
         userLeaveLobbyEventHandler.dispatch(this);
         unregisterUserLeaveLobbyEventHandler();
+    }
+
+    public JSONObject jsonUser(){
+        JSONObject json_user = new JSONObject();
+        json_user.put(USERNAMEKEY, this.name);
+        json_user.put(HOSTKEY, this.isHost);
+        json_user.put(ISMALEKEY, this.isMale);
+        json_user.put(ISREADYKEY, this.isReady);
+        json_user.put(HASSELECTEDKEY, this.hasSelected);
+        json_user.put(USERIMAGEKEY, "/uploads/tmp");
+        return json_user;
     }
 }

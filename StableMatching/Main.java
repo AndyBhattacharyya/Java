@@ -14,10 +14,10 @@ public class Main {
         test.addUserToLobby(u2);
         test.addUserToLobby(u3);
         test.addUserToLobby(u4);
-        u1.setUserReady(true);
-        u2.setUserReady(true);
-        u3.setUserReady(true);
-        u4.setUserReady(true);
+        u1.setUserReady(true, true);
+        u2.setUserReady(true, true);
+        u3.setUserReady(true, true);
+        u4.setUserReady(true, true);
         u1.disconnectUserFromLobby();
 
 
